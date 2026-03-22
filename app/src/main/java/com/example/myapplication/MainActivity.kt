@@ -37,7 +37,9 @@ fun AppNavigation() {
         composable("menu") {
             MainMenu(navController = navController)
         }
-        composable("clicker") { Text("Witaj w sekcji EARN MONEY!") }
+        composable("clicker") {
+            ClickerScreen(navController = navController)
+        }
         composable("game") { Text("Ekran PLAY OFFLINE") }
         composable("host") { Text("Ekran HOST LOBBY") }
         composable("join") { Text("Ekran JOIN LOBBY") }

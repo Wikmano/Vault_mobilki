@@ -40,7 +40,9 @@ fun AppNavigation() {
         composable("clicker") {
             ClickerScreen(navController = navController)
         }
-        composable("game") { Text("Ekran PLAY OFFLINE") }
+        composable("game") {
+            GameScreen(navController = navController)
+        }
         composable("host") { Text("Ekran HOST LOBBY") }
         composable("join") { Text("Ekran JOIN LOBBY") }
     }

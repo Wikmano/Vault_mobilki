@@ -6,7 +6,6 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
@@ -47,6 +46,8 @@ fun AppNavigation() {
         composable("host") {
             HostLobbyScreen(onBack = { navController.popBackStack() })
         }
-        composable("join") { Text("Ekran JOIN LOBBY") }
+        composable("join") {
+            JoinLobbyScreen(onBack = { navController.popBackStack() })
+        }
     }
 }

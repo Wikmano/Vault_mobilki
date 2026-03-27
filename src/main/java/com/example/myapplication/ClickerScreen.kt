@@ -8,7 +8,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -19,9 +19,11 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
 @Composable
-fun ClickerScreen(navController: NavController) {
-    var monety by remember { mutableStateOf(0) }
-
+fun ClickerScreen(
+    navController: NavController,
+    monety: Int,
+    onGetGold: () -> Unit
+) {
     val backgroundGradient = Brush.linearGradient(
         colors = listOf(Color(0xFF4C1D95), Color(0xFF6B21A8), Color(0xFF9333EA))
     )
@@ -51,7 +53,7 @@ fun ClickerScreen(navController: NavController) {
         )
 
         Button(
-            onClick = { monety += 1 },
+            onClick = onGetGold,
             modifier = Modifier
                 .fillMaxWidth(0.7f)
                 .height(60.dp)

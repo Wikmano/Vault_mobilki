@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
 @Composable
-fun MainMenu(navController: NavController) {
+fun MainMenu(navController: NavController, monety: Int) {
     val backgroundGradient = Brush.linearGradient(
         colors = listOf(Color(0xFF4C1D95), Color(0xFF6B21A8), Color(0xFF9333EA))
     )
@@ -36,6 +36,29 @@ fun MainMenu(navController: NavController) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        // Wyświetlanie liczby monet na górze
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 32.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Filled.MonetizationOn,
+                contentDescription = "Monety",
+                tint = Color(0xFFFFD700), // Złoty kolor
+                modifier = Modifier.size(32.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "$monety",
+                color = Color.White,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
         Icon(
             imageVector = Icons.Filled.TrendingUp,
             contentDescription = "Trending",

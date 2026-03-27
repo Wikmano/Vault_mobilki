@@ -8,6 +8,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -32,13 +36,18 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
+    var monety by remember { mutableStateOf(0) }
 
     NavHost(navController = navController, startDestination = "menu") {
         composable("menu") {
-            MainMenu(navController = navController)
+            MainMenu(navController = navController, monety = monety)
         }
         composable("clicker") {
-            ClickerScreen(navController = navController)
+            ClickerScreen(
+                navController = navController,
+                monety = monety,
+                onGetGold = { monety += 1 }
+            )
         }
         composable("game") {
             GameScreen(navController = navController)

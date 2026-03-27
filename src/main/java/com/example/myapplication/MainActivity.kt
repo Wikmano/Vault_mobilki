@@ -16,12 +16,13 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.myapplication.ui.theme.MyApplicationTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MaterialTheme {
+            MyApplicationTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -52,7 +53,17 @@ fun AppNavigation() {
         composable("game") {
             GameScreen(navController = navController)
         }
-        composable("host") { Text("Ekran HOST LOBBY") }
-        composable("join") { Text("Ekran JOIN LOBBY") }
+        composable("host") {
+            HostLobbyScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable("join") {
+            JoinLobbyScreen(
+                onBack = { navController.popBackStack() },
+                onJoin = { ipAddress -> println("Próba połączenia z IP: $ipAddress")
+                }
+            )
+        }
     }
-}
+ }

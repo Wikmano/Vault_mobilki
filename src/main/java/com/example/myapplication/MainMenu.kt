@@ -36,7 +36,7 @@ fun MainMenu(navController: NavController, monety: Int) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Wyświetlanie liczby monet na górze
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -47,7 +47,7 @@ fun MainMenu(navController: NavController, monety: Int) {
             Icon(
                 imageVector = Icons.Filled.MonetizationOn,
                 contentDescription = "Monety",
-                tint = Color(0xFFFFD700), // Złoty kolor
+                tint = Color(0xFFFFD700),
                 modifier = Modifier.size(32.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))

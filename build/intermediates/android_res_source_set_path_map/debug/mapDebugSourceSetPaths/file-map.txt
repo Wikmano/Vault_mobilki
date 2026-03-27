@@ -1,7 +1,0 @@
-com.example.myapplication.app-pngs-0 /home/luk/AndroidStudioProjects/MyApplication2/app/build/generated/res/pngs/debug
-com.example.myapplication.app-updated_navigation_xml-1 /home/luk/AndroidStudioProjects/MyApplication2/app/build/generated/updated_navigation_xml/debug
-com.example.myapplication.app-packageDebugResources-2 /home/luk/AndroidStudioProjects/MyApplication2/app/build/intermediates/incremental/debug/packageDebugResources/merged.dir
-com.example.myapplication.app-packageDebugResources-3 /home/luk/AndroidStudioProjects/MyApplication2/app/build/intermediates/incremental/debug/packageDebugResources/stripped.dir
-com.example.myapplication.app-debug-4 /home/luk/AndroidStudioProjects/MyApplication2/app/build/intermediates/merged_res/debug/mergeDebugResources
-com.example.myapplication.app-debug-5 /home/luk/AndroidStudioProjects/MyApplication2/app/src/debug/res
-com.example.myapplication.app-main-6 /home/luk/AndroidStudioProjects/MyApplication2/app/src/main/res

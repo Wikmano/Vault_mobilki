@@ -37,33 +37,53 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
-    var monety by remember { mutableStateOf(0) }
+    val context = androidx.compose.ui.platform.LocalContext.current
 
-    NavHost(navController = navController, startDestination = "menu") {
+    val database = remember {
+        androidx.room.Room.databaseBuilder(
+            context,
+            AppDatabase::class.java, "game-database"
+        ).build()
+    }
+    val gameDao = database.gameDao()
+
+    var coins by remember { mutableStateOf(0) }
+    var isDataLoaded by remember { mutableStateOf(false) }
+
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        val savedCoins = gameDao.getCoins() ?: 0
+        coins = savedCoins
+        isDataLoaded = true
+    }
+
+    androidx.compose.runtime.LaunchedEffect(coins) {
+        if (isDataLoaded) {
+            gameDao.saveCoins(GameSave(coins = coins))
+        }
+    }
+
+    androidx.navigation.compose.NavHost(navController = navController, startDestination = "menu") {
         composable("menu") {
-            MainMenu(navController = navController, monety = monety)
+            MainMenu(navController = navController, monety = coins)
         }
         composable("clicker") {
             ClickerScreen(
                 navController = navController,
-                monety = monety,
-                onGetGold = { monety += 1 }
+                coins = coins,
+                onGetGold = { coins += 1 }
             )
         }
         composable("game") {
             GameScreen(navController = navController)
         }
         composable("host") {
-            HostLobbyScreen(
-                onBack = { navController.popBackStack() }
-            )
+            HostLobbyScreen(onBack = { navController.popBackStack() })
         }
         composable("join") {
             JoinLobbyScreen(
                 onBack = { navController.popBackStack() },
-                onJoin = { ipAddress -> println("Próba połączenia z IP: $ipAddress")
-                }
+                onJoin = { ip -> println("Connecting to $ip") }
             )
         }
     }
- }
+}

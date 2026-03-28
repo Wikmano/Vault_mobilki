@@ -21,7 +21,7 @@ import androidx.navigation.NavController
 @Composable
 fun ClickerScreen(
     navController: NavController,
-    monety: Int,
+    coins: Int,
     onGetGold: () -> Unit
 ) {
     val backgroundGradient = Brush.linearGradient(
@@ -45,7 +45,7 @@ fun ClickerScreen(
         )
 
         Text(
-            text = "Money: $monety",
+            text = "Money: $coins",
             color = Color.White,
             fontSize = 48.sp,
             fontWeight = FontWeight.Bold,

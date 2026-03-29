@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
 @Composable
-fun MainMenu(navController: NavController, monety: Int) { // <-- TEJ LINIJKI BRAKOWAŁO!
+fun MainMenu(navController: NavController, monety: Int) {
     val backgroundGradient = Brush.linearGradient(
         colors = listOf(Color(0xFF4C1D95), Color(0xFF6B21A8), Color(0xFF9333EA))
     )

@@ -27,12 +27,20 @@ import androidx.compose.ui.unit.sp
 import com.example.myapplication.ui.theme.MyApplicationTheme
 
 @Composable
-fun JoinLobbyScreen(onBack: () -> Unit = {}, onJoin: (String) -> Unit = {}) {
+fun JoinLobbyScreen(viewModel: LobbyViewModel, onBack: () -> Unit = {}, onJoinSuccess: () -> Unit = {}) {
     var ipAddress by remember { mutableStateOf("") }
+    val statusMessage by viewModel.statusMessage
+    val isConnected by viewModel.isConnected
 
     val backgroundGradient = Brush.verticalGradient(
         colors = listOf(Color(0xFF4C1D95), Color(0xFF3D1B7E))
     )
+
+    LaunchedEffect(isConnected) {
+        if (isConnected) {
+            onJoinSuccess()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -62,7 +70,16 @@ fun JoinLobbyScreen(onBack: () -> Unit = {}, onJoin: (String) -> Unit = {}) {
             modifier = Modifier.size(120.dp)
         )
 
-        Spacer(modifier = Modifier.height(64.dp))
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Text(
+            text = statusMessage,
+            color = Color.Yellow,
+            fontSize = 14.sp,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
 
         // Instruction
         Text(
@@ -115,11 +132,11 @@ fun JoinLobbyScreen(onBack: () -> Unit = {}, onJoin: (String) -> Unit = {}) {
 
         // Join Button
         Button(
-            onClick = { onJoin(ipAddress) },
+            onClick = { viewModel.joinLobby(ipAddress) },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(64.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2D6A6E)), // Tealish/Greenish from image
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2D6A6E)), 
             shape = RoundedCornerShape(16.dp)
         ) {
             Text(
@@ -138,7 +155,7 @@ fun JoinLobbyScreen(onBack: () -> Unit = {}, onJoin: (String) -> Unit = {}) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(64.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7E22CE)), // Purple from image
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7E22CE)), 
             shape = RoundedCornerShape(16.dp)
         ) {
             Text(
@@ -148,13 +165,5 @@ fun JoinLobbyScreen(onBack: () -> Unit = {}, onJoin: (String) -> Unit = {}) {
                 fontWeight = FontWeight.Bold
             )
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun JoinLobbyPreview() {
-    MyApplicationTheme {
-        JoinLobbyScreen()
     }
 }

@@ -6,6 +6,8 @@ import android.net.LinkProperties
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -23,7 +25,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myapplication.ui.theme.*
@@ -70,14 +71,20 @@ suspend fun getLocalIpv4Address(context: Context): String? = withContext(Dispatc
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HostLobbyScreen(onBack: () -> Unit = {}) {
+fun HostLobbyScreen(
+    viewModel: LobbyViewModel,
+    onBack: () -> Unit = {},
+    onStartGame: () -> Unit = {}
+) {
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
 
     var deviceIp by remember { mutableStateOf("Fetching...") }
+    val players = viewModel.players
 
     LaunchedEffect(Unit) {
         deviceIp = getLocalIpv4Address(context) ?: "No Network Found"
+        viewModel.startHosting()
     }
 
     Scaffold(
@@ -168,35 +175,43 @@ fun HostLobbyScreen(onBack: () -> Unit = {}) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .weight(1f)
                     .clip(RoundedCornerShape(16.dp))
                     .background(PurpleCard)
                     .padding(16.dp)
             ) {
                 Text(
-                    text = "PLAYERS (1/8)",
+                    text = "PLAYERS (${players.size}/8)",
                     color = TextLight.copy(alpha = 0.7f),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
-                PlayerItem(name = "You", isHost = true, money = "$1000.00")
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(players) { player ->
+                        PlayerItem(name = player.name, isHost = player.isHost, money = player.money)
+                    }
+                }
 
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "Waiting for players to join...",
-                    color = TextLight.copy(alpha = 0.5f),
-                    fontSize = 14.sp,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
+                if (players.size <= 1) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Waiting for players to join...",
+                        color = TextLight.copy(alpha = 0.5f),
+                        fontSize = 14.sp,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                }
             }
 
-            // Pcha przyciski na dół ekranu
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // --- DOLNE PRZYCISKI ---
             Button(
-                onClick = { /* Start Game */ },
+                onClick = onStartGame,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -299,13 +314,5 @@ fun PlayerItem(name: String, isHost: Boolean, money: String) {
             color = TextLight,
             fontSize = 16.sp
         )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun HostLobbyPreview() {
-    MyApplicationTheme {
-        HostLobbyScreen()
     }
 }

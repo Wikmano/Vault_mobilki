@@ -74,9 +74,9 @@ fun GameScreen(navController: NavController, coins: Int, onCoinsChange: (Int) ->
         }
     }
 
-    val seed = 12345
+    val seed = 44444
     val points = 500
-    val volatility = 50f
+    val volatility = 60f
 
     val chart = remember(seed, currentLoop) {
         val random = Random(seed + currentLoop * 777)

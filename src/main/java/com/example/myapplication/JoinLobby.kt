@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.sp
 import com.example.myapplication.ui.theme.MyApplicationTheme
 
 @Composable
-fun JoinLobbyScreen(viewModel: LobbyViewModel, onBack: () -> Unit = {}, onJoinSuccess: () -> Unit = {}) {
+fun JoinLobbyScreen(viewModel: LobbyViewModel, onBack: () -> Unit = {}, onJoinSuccess: (String) -> Unit = {}) {
     var ipAddress by remember { mutableStateOf("") }
     val statusMessage by viewModel.statusMessage
     val isConnected by viewModel.isConnected
@@ -38,7 +38,7 @@ fun JoinLobbyScreen(viewModel: LobbyViewModel, onBack: () -> Unit = {}, onJoinSu
 
     LaunchedEffect(isConnected) {
         if (isConnected) {
-            onJoinSuccess()
+            onJoinSuccess(ipAddress)
         }
     }
 

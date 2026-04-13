@@ -3,21 +3,17 @@ package com.example.myapplication
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.myapplication.ui.theme.MyApplicationTheme
 
 class MainActivity : ComponentActivity() {
@@ -46,30 +42,28 @@ fun AppNavigation() {
         androidx.room.Room.databaseBuilder(
             context,
             AppDatabase::class.java, "game-database"
-        ).build()
+        ).fallbackToDestructiveMigration()
+            .build()
     }
-    val gameDao = database.gameDao()
-
-    var coins by remember { mutableStateOf(0) }
-    var isDataLoaded by remember { mutableStateOf(false) }
-
+    
+    // Initialize DB in ViewModel once
     LaunchedEffect(Unit) {
-        val savedCoins = gameDao.getCoins() ?: 0
-        coins = savedCoins
-        isDataLoaded = true
+        lobbyViewModel.initDatabase(database.gameDao())
     }
 
-    LaunchedEffect(coins) {
-        if (isDataLoaded) {
-            gameDao.saveCoins(GameSave(coins = coins))
+    val coins by lobbyViewModel.globalCoins
+
+    // Listen for game start
+    LaunchedEffect(Unit) {
+        lobbyViewModel.gameStarted.collect { settings ->
+            navController.navigate("game/${settings.loops}/${settings.blind}/${settings.volatility}/${settings.buyin}/${settings.seed}")
         }
     }
 
-    // Listen for game start from the ViewModel
+    // Listen for leaderboard
     LaunchedEffect(Unit) {
-        lobbyViewModel.gameStarted.collect { seed ->
-            // In a real app, you would pass the seed to GameScreen
-            navController.navigate("game")
+        lobbyViewModel.showLeaderboard.collect { scores ->
+            navController.navigate("leaderboard")
         }
     }
 
@@ -77,41 +71,94 @@ fun AppNavigation() {
         composable("menu") {
             MainMenu(navController = navController, monety = coins)
         }
+        composable("profile") {
+            ProfileScreen(navController = navController, viewModel = lobbyViewModel)
+        }
+        composable("settings") {
+            GameSettingsScreen(
+                navController = navController,
+                viewModel = lobbyViewModel,
+                availableCoins = coins
+            )
+        }
         composable("clicker") {
             ClickerScreen(
                 navController = navController,
                 coins = coins,
-                onGetGold = { coins += 1 }
+                onGetGold = { lobbyViewModel.addCoins(1) }
             )
         }
-        composable("game") {
+        composable(
+            "game/{loops}/{blind}/{volatility}/{buyin}/{seed}",
+            arguments = listOf(
+                navArgument("loops") { type = NavType.IntType },
+                navArgument("blind") { type = NavType.IntType },
+                navArgument("volatility") { type = NavType.FloatType },
+                navArgument("buyin") { type = NavType.IntType },
+                navArgument("seed") { type = NavType.IntType }
+            )
+        ) { backStackEntry ->
+            val loops = backStackEntry.arguments?.getInt("loops") ?: 3
+            val blind = backStackEntry.arguments?.getInt("blind") ?: 10
+            val volatility = backStackEntry.arguments?.getFloat("volatility") ?: 60f
+            val buyin = backStackEntry.arguments?.getInt("buyin") ?: 100
+            val seed = backStackEntry.arguments?.getInt("seed") ?: 0
+            
+            var inGameBalance by remember { mutableIntStateOf(buyin) }
+
             GameScreen(
                 navController = navController,
-                coins = coins,
-                onCoinsChange = { coins = it }
+                coins = inGameBalance,
+                onCoinsChange = { 
+                    inGameBalance = it
+                },
+                onFinished = { finalBalance ->
+                    lobbyViewModel.reportScore(finalBalance)
+                },
+                loops = loops,
+                blind = blind,
+                volatility = volatility,
+                seed = seed
+            )
+        }
+        composable("leaderboard") {
+            LeaderboardScreen(
+                scores = lobbyViewModel.leaderboard,
+                onBackToMenu = { 
+                    navController.navigate("menu") {
+                        popUpTo("menu") { inclusive = true }
+                    }
+                }
             )
         }
         composable("host") {
             HostLobbyScreen(
                 viewModel = lobbyViewModel,
                 onBack = { navController.popBackStack() },
-                onStartGame = { lobbyViewModel.startGame() }
+                onStartGame = { lobbyViewModel.startGame() },
+                isHost = true
             )
         }
         composable("join") {
             JoinLobbyScreen(
                 viewModel = lobbyViewModel,
                 onBack = { navController.popBackStack() },
-                onJoinSuccess = {
-                    navController.navigate("guest_lobby")
+                onJoinSuccess = { ip ->
+                    navController.navigate("guest_lobby/$ip")
                 }
             )
         }
-        composable("guest_lobby") {
+        composable(
+            "guest_lobby/{serverIp}",
+            arguments = listOf(navArgument("serverIp") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val serverIp = backStackEntry.arguments?.getString("serverIp") ?: "Unknown"
             HostLobbyScreen(
                 viewModel = lobbyViewModel,
                 onBack = { navController.popBackStack() },
-                onStartGame = { /* Guests can't start the game */ }
+                onStartGame = { /* Guests can't start */ },
+                isHost = false,
+                serverIp = serverIp
             )
         }
     }

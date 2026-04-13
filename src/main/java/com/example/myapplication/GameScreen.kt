@@ -38,10 +38,18 @@ import kotlin.random.Random
 import kotlin.math.round
 
 @Composable
-fun GameScreen(navController: NavController, coins: Int, onCoinsChange: (Int) -> Unit) {
+fun GameScreen(
+    navController: NavController,
+    coins: Int,
+    onCoinsChange: (Int) -> Unit,
+    onFinished: (Int) -> Unit = {},
+    loops: Int = 3,
+    blind: Int = 10,
+    volatility: Float = 60f,
+    seed: Int = 44444
+) {
     val context = LocalContext.current
-    val blind = 10
-    var betAmount by remember { mutableIntStateOf(blind) }
+    var betAmount by remember { mutableIntStateOf(minOf(blind, coins)) }
     val selectedMultipliers = remember { mutableStateListOf<Int>() }
     val buttonBounds = remember { mutableStateMapOf<Int, Rect>() }
     var isStopped by remember { mutableStateOf(false) }
@@ -51,7 +59,6 @@ fun GameScreen(navController: NavController, coins: Int, onCoinsChange: (Int) ->
     var boxSize by remember { mutableStateOf(Size.Zero) }
     var boxCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
     
-    val loops = 3
     var currentLoop by remember { mutableIntStateOf(1) }
 
     DisposableEffect(Unit) {
@@ -74,11 +81,9 @@ fun GameScreen(navController: NavController, coins: Int, onCoinsChange: (Int) ->
         }
     }
 
-    val seed = 44444
     val points = 500
-    val volatility = 60f
 
-    val chart = remember(seed, currentLoop) {
+    val chart = remember(seed, currentLoop, volatility) {
         val random = Random(seed + currentLoop * 777)
         val data = MutableList(points) { 0f }
         var currentValue = 0f
@@ -122,8 +127,10 @@ fun GameScreen(navController: NavController, coins: Int, onCoinsChange: (Int) ->
                 progress.snapTo(0f)
                 isStopped = false
                 currentLoop++
+                // Reset bet amount for next loop if needed
+                betAmount = minOf(blind, coins)
             } else {
-                navController.popBackStack()
+                onFinished(coins)
             }
         }
     }
@@ -153,6 +160,8 @@ fun GameScreen(navController: NavController, coins: Int, onCoinsChange: (Int) ->
                     progress.stop()
                     
                     if (selectedMultipliers.isNotEmpty() && selectedMultipliers[0] == collisionIndex) {
+                        val actualBet = minOf(betAmount, coins + (if (selectedMultipliers.isNotEmpty()) betAmount else 0)) 
+                        // Note: coins already had betAmount subtracted when button was clicked
                         onCoinsChange(coins + (betAmount * (frozenMultiplier ?: 0f)).toInt())
                     }
                     break
@@ -245,11 +254,13 @@ fun GameScreen(navController: NavController, coins: Int, onCoinsChange: (Int) ->
 
                 Button(
                     onClick = {
-                        if (!isStopped && selectedMultipliers.isEmpty() && coins >= betAmount) {
+                        if (!isStopped && selectedMultipliers.isEmpty() && coins > 0) {
+                            val actualBet = minOf(betAmount, coins)
                             val mult = round(5 * (1 - progress.value) * 10) / 10f
                             frozenMultiplier = mult
                             selectedMultipliers.add(index)
-                            onCoinsChange(coins - betAmount)
+                            // We use the actual bet (which can be less than betAmount if coins < blind)
+                            onCoinsChange(coins - actualBet)
                         }
                     },
                     modifier = Modifier
@@ -260,7 +271,7 @@ fun GameScreen(navController: NavController, coins: Int, onCoinsChange: (Int) ->
                                 buttonBounds[index] = parent.localBoundingBoxOf(coords)
                             }
                         },
-                    enabled = !isStopped && selectedMultipliers.isEmpty(),
+                    enabled = !isStopped && selectedMultipliers.isEmpty() && (coins > 0 || selectedMultipliers.isNotEmpty()),
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = buttonColor,
@@ -323,20 +334,21 @@ fun GameScreen(navController: NavController, coins: Int, onCoinsChange: (Int) ->
                     modifier = Modifier
                         .size(40.dp)
                         .background(Color.White.copy(alpha = 0.1f), RoundedCornerShape(8.dp)),
-                    enabled = !isStopped && selectedMultipliers.isEmpty()
+                    enabled = !isStopped && selectedMultipliers.isEmpty() && betAmount > blind
                 ) {
                     Text("-", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
                 }
 
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    val actualBet = if (selectedMultipliers.isEmpty()) minOf(betAmount, coins) else betAmount
                     Text(
-                        text = "BET",
+                        text = if (actualBet < blind && actualBet > 0 && selectedMultipliers.isEmpty()) "ALL-IN" else "BET",
                         color = Color(0xFFE9D5FF),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "$betAmount",
+                        text = "$actualBet",
                         color = Color.White,
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold
@@ -344,7 +356,10 @@ fun GameScreen(navController: NavController, coins: Int, onCoinsChange: (Int) ->
                 }
 
                 IconButton(
-                    onClick = { betAmount += blind },
+                    onClick = { 
+                        if (betAmount < blind) betAmount = blind 
+                        else betAmount += blind 
+                    },
                     modifier = Modifier
                         .size(40.dp)
                         .background(Color.White.copy(alpha = 0.1f), RoundedCornerShape(8.dp)),
@@ -356,7 +371,7 @@ fun GameScreen(navController: NavController, coins: Int, onCoinsChange: (Int) ->
         }
 
         Text(
-            text = "${(round((10 - 10 * progress.value.coerceIn(0f, 0.8f)/0.8f) * 10) / 10f).coerceAtLeast(0f)}",
+            text = if (isStopped) "0.0" else "${(round((10 - 10 * progress.value) * 10) / 10f).coerceAtLeast(0f)}",
             color = Color.White,
             fontSize = 24.sp,
             style = MaterialTheme.typography.titleLarge,

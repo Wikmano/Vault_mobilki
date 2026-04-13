@@ -1,5 +1,7 @@
 package com.example.myapplication
 
+import coil.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.LinkProperties
@@ -15,7 +17,12 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -74,17 +81,21 @@ suspend fun getLocalIpv4Address(context: Context): String? = withContext(Dispatc
 fun HostLobbyScreen(
     viewModel: LobbyViewModel,
     onBack: () -> Unit = {},
-    onStartGame: () -> Unit = {}
+    onStartGame: () -> Unit = {},
+    isHost: Boolean = true,
+    serverIp: String = "Fetching..."
 ) {
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
 
-    var deviceIp by remember { mutableStateOf("Fetching...") }
+    var deviceIp by remember { mutableStateOf(serverIp) }
     val players = viewModel.players
 
     LaunchedEffect(Unit) {
-        deviceIp = getLocalIpv4Address(context) ?: "No Network Found"
-        viewModel.startHosting()
+        if (isHost) {
+            deviceIp = getLocalIpv4Address(context) ?: "No Network Found"
+            viewModel.startHosting()
+        }
     }
 
     Scaffold(
@@ -192,7 +203,12 @@ fun HostLobbyScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(players) { player ->
-                        PlayerItem(name = player.name, isHost = player.isHost, money = player.money)
+                        PlayerItem(
+                            name = player.name, 
+                            isHost = player.isHost, 
+                            money = player.money,
+                            avatarUrl = player.avatarUrl
+                        )
                     }
                 }
 
@@ -210,28 +226,38 @@ fun HostLobbyScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // --- DOLNE PRZYCISKI ---
-            Button(
-                onClick = onStartGame,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = GreenStart),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.PlayArrow,
-                        contentDescription = null,
-                        tint = Color.White
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "START GAME",
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
-                    )
+            if (isHost) {
+                Button(
+                    onClick = onStartGame,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = GreenStart),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.PlayArrow,
+                            contentDescription = null,
+                            tint = Color.White
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "START GAME",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                    }
                 }
+            } else {
+                Text(
+                    text = "Waiting for host to start...",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    modifier = Modifier.padding(vertical = 16.dp)
+                )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -256,7 +282,7 @@ fun HostLobbyScreen(
 }
 
 @Composable
-fun PlayerItem(name: String, isHost: Boolean, money: String) {
+fun PlayerItem(name: String, isHost: Boolean, money: Int, avatarUrl: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -272,10 +298,11 @@ fun PlayerItem(name: String, isHost: Boolean, money: String) {
                 .background(AccentPurple),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = name.take(1).uppercase(),
-                color = Color.White,
-                fontWeight = FontWeight.Bold
+            AsyncImage(
+                model = avatarUrl,
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
             )
         }
 
@@ -310,7 +337,7 @@ fun PlayerItem(name: String, isHost: Boolean, money: String) {
 
         // Kwota
         Text(
-            text = money,
+            text = "$$money",
             color = TextLight,
             fontSize = 16.sp
         )

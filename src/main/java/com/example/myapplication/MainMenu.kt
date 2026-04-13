@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.MonetizationOn
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -94,17 +95,10 @@ fun MainMenu(navController: NavController, monety: Int) {
             )
 
             GradientButton(
-                text = "PLAY OFFLINE",
-                icon = Icons.Filled.TrendingUp,
-                colors = listOf(Color(0xFFA855F7), Color(0xFFDB2777)),
-                onClick = { navController.navigate("game") }
-            )
-
-            GradientButton(
                 text = "HOST LOBBY",
                 icon = Icons.Filled.Group,
                 colors = listOf(Color(0xFF3B82F6), Color(0xFF1D4ED8)),
-                onClick = { navController.navigate("host") }
+                onClick = { navController.navigate("settings") }
             )
 
             GradientButton(
@@ -112,6 +106,15 @@ fun MainMenu(navController: NavController, monety: Int) {
                 icon = Icons.Filled.Group,
                 colors = listOf(Color(0xFF6366F1), Color(0xFF7E22CE)),
                 onClick = { navController.navigate("join") }
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            GradientButton(
+                text = "PROFILE",
+                icon = Icons.Filled.Person,
+                colors = listOf(Color(0xFFEC4899), Color(0xFFDB2777)),
+                onClick = { navController.navigate("profile") }
             )
         }
 

@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.example.myapplication.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -21,10 +21,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myapplication.ui.theme.MyApplicationTheme
+import com.example.myapplication.viewmodel.LobbyViewModel
 
 @Composable
 fun JoinLobbyScreen(viewModel: LobbyViewModel, onBack: () -> Unit = {}, onJoinSuccess: (String) -> Unit = {}) {

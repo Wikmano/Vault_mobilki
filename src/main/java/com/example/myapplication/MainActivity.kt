@@ -15,6 +15,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.myapplication.ui.theme.MyApplicationTheme
+import com.example.myapplication.viewmodel.LobbyViewModel
+import com.example.myapplication.data.AppDatabase
+import com.example.myapplication.ui.screens.*
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -125,6 +128,7 @@ fun AppNavigation() {
             LeaderboardScreen(
                 scores = lobbyViewModel.leaderboard,
                 onBackToMenu = { 
+                    lobbyViewModel.leaveLobby()
                     navController.navigate("menu") {
                         popUpTo("menu") { inclusive = true }
                     }
@@ -134,7 +138,10 @@ fun AppNavigation() {
         composable("host") {
             HostLobbyScreen(
                 viewModel = lobbyViewModel,
-                onBack = { navController.popBackStack() },
+                onBack = { 
+                    lobbyViewModel.leaveLobby()
+                    navController.popBackStack() 
+                },
                 onStartGame = { lobbyViewModel.startGame() },
                 isHost = true
             )
@@ -142,7 +149,10 @@ fun AppNavigation() {
         composable("join") {
             JoinLobbyScreen(
                 viewModel = lobbyViewModel,
-                onBack = { navController.popBackStack() },
+                onBack = { 
+                    lobbyViewModel.leaveLobby()
+                    navController.popBackStack() 
+                },
                 onJoinSuccess = { ip ->
                     navController.navigate("guest_lobby/$ip")
                 }
@@ -155,7 +165,10 @@ fun AppNavigation() {
             val serverIp = backStackEntry.arguments?.getString("serverIp") ?: "Unknown"
             HostLobbyScreen(
                 viewModel = lobbyViewModel,
-                onBack = { navController.popBackStack() },
+                onBack = { 
+                    lobbyViewModel.leaveLobby()
+                    navController.popBackStack() 
+                },
                 onStartGame = { /* Guests can't start */ },
                 isHost = false,
                 serverIp = serverIp

@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.example.myapplication.ui.screens
 
 import android.app.Activity
 import android.content.pm.ActivityInfo
@@ -84,7 +84,7 @@ fun GameScreen(
     val points = 500
 
     val chart = remember(seed, currentLoop, volatility) {
-        val random = Random(seed + currentLoop * 777)
+        val random = Random(seed + currentLoop * 777.toLong())
         val data = MutableList(points) { 0f }
         var currentValue = 0f
         for (i in 0 until points) {
@@ -160,8 +160,6 @@ fun GameScreen(
                     progress.stop()
                     
                     if (selectedMultipliers.isNotEmpty() && selectedMultipliers[0] == collisionIndex) {
-                        val actualBet = minOf(betAmount, coins + (if (selectedMultipliers.isNotEmpty()) betAmount else 0)) 
-                        // Note: coins already had betAmount subtracted when button was clicked
                         onCoinsChange(coins + (betAmount * (frozenMultiplier ?: 0f)).toInt())
                     }
                     break
@@ -259,7 +257,6 @@ fun GameScreen(
                             val mult = round(5 * (1 - progress.value) * 10) / 10f
                             frozenMultiplier = mult
                             selectedMultipliers.add(index)
-                            // We use the actual bet (which can be less than betAmount if coins < blind)
                             onCoinsChange(coins - actualBet)
                         }
                     },

@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.example.myapplication.ui.screens
 
 import coil.compose.AsyncImage
 import androidx.compose.ui.layout.ContentScale
@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myapplication.ui.theme.*
+import com.example.myapplication.viewmodel.LobbyViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.Inet4Address

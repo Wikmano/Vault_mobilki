@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.example.myapplication.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -18,6 +18,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.myapplication.viewmodel.LobbyViewModel
+import com.example.myapplication.model.GameSettings
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

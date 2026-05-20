@@ -1,7 +1,12 @@
 package com.example.myapplication.ui.screens
 
+import android.media.MediaPlayer
+import android.net.Uri
+import android.widget.VideoView
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MonetizationOn
 import androidx.compose.material3.Button
@@ -11,12 +16,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
+import com.example.myapplication.R
 
 @Composable
 fun ClickerScreen(
@@ -24,9 +33,19 @@ fun ClickerScreen(
     coins: Int,
     onGetGold: () -> Unit
 ) {
+    val context = LocalContext.current
     val backgroundGradient = Brush.linearGradient(
         colors = listOf(Color(0xFF4C1D95), Color(0xFF6B21A8), Color(0xFF9333EA))
     )
+
+    // Specify the type explicitly to resolve the "Cannot infer type" error.
+    val marioClickPlayer = remember<MediaPlayer?> { MediaPlayer.create(context, R.raw.mario_click) }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            marioClickPlayer?.release()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -42,6 +61,11 @@ fun ClickerScreen(
             modifier = Modifier
                 .size(100.dp)
                 .padding(bottom = 16.dp)
+                .clickable {
+                    marioClickPlayer?.seekTo(0)
+                    marioClickPlayer?.start()
+                    onGetGold()
+                }
         )
 
         Text(
@@ -49,11 +73,15 @@ fun ClickerScreen(
             color = Color.White,
             fontSize = 48.sp,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 48.dp)
+            modifier = Modifier.padding(bottom = 32.dp)
         )
 
         Button(
-            onClick = onGetGold,
+            onClick = {
+                marioClickPlayer?.seekTo(0)
+                marioClickPlayer?.start()
+                onGetGold()
+            },
             modifier = Modifier
                 .fillMaxWidth(0.7f)
                 .height(60.dp)
@@ -65,6 +93,31 @@ fun ClickerScreen(
                 color = Color.White,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(0.8f)
+                .height(200.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(Color.Black)
+        ) {
+            AndroidView(
+                factory = { ctx ->
+                    VideoView(ctx).apply {
+                        val uri = Uri.parse("android.resource://${ctx.packageName}/${R.raw.subway_surfers}")
+                        setVideoURI(uri)
+                        setOnPreparedListener { mp ->
+                            mp.isLooping = true
+                            mp.setVolume(0f, 0f) // Mute video so it doesn't interrupt game audio
+                            start()
+                        }
+                    }
+                },
+                modifier = Modifier.fillMaxSize()
             )
         }
 

@@ -2,6 +2,8 @@ package com.example.myapplication.ui.screens
 
 import android.app.Activity
 import android.content.pm.ActivityInfo
+import android.media.MediaPlayer
+import com.example.myapplication.R
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
@@ -61,6 +63,8 @@ fun GameScreen(
     
     var currentLoop by remember { mutableIntStateOf(1) }
 
+    val vineBoomPlayer = remember { MediaPlayer.create(context, R.raw.vine_boom) }
+
     DisposableEffect(Unit) {
         val activity = context as? Activity
         val window = activity?.window
@@ -78,6 +82,7 @@ fun GameScreen(
                 val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
                 windowInsetsController.show(WindowInsetsCompat.Type.systemBars())
             }
+            vineBoomPlayer?.release()
         }
     }
 
@@ -161,6 +166,8 @@ fun GameScreen(
                     
                     if (selectedMultipliers.isNotEmpty() && selectedMultipliers[0] == collisionIndex) {
                         onCoinsChange(coins + (betAmount * (frozenMultiplier ?: 0f)).toInt())
+                        vineBoomPlayer?.seekTo(0)
+                        vineBoomPlayer?.start()
                     }
                     break
                 }
